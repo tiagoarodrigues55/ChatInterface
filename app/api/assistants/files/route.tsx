@@ -1,11 +1,12 @@
-import { assistantId } from "@/app/assistant-config";
 import { openai } from "@/app/openai";
 
 // upload file to assistant's vector store
 export async function POST(request) {
+  const { searchParams } = new URL(request.url);
+  const assistantId = searchParams.get("assistantId");
   const formData = await request.formData(); // process file as FormData
   const file = formData.get("file"); // retrieve the single file from FormData
-  const vectorStoreId = await getOrCreateVectorStore(); // get or create vector store
+  const vectorStoreId = await getOrCreateVectorStore(assistantId); // get or create vector store
 
   // upload using the file stream
   const openaiFile = await openai.files.create({
@@ -21,8 +22,10 @@ export async function POST(request) {
 }
 
 // list files in assistant's vector store
-export async function GET() {
-  const vectorStoreId = await getOrCreateVectorStore(); // get or create vector store
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const assistantId = searchParams.get("assistantId");
+  const vectorStoreId = await getOrCreateVectorStore(assistantId); // get or create vector store
   const fileList = await openai.beta.vectorStores.files.list(vectorStoreId);
 
   const filesArray = await Promise.all(
@@ -46,8 +49,9 @@ export async function GET() {
 export async function DELETE(request) {
   const body = await request.json();
   const fileId = body.fileId;
+  const assistantId = body.assistantId;
 
-  const vectorStoreId = await getOrCreateVectorStore(); // get or create vector store
+  const vectorStoreId = await getOrCreateVectorStore(assistantId); // get or create vector store
   await openai.beta.vectorStores.files.del(vectorStoreId, fileId); // delete file from vector store
 
   return new Response();
@@ -55,7 +59,7 @@ export async function DELETE(request) {
 
 /* Helper functions */
 
-const getOrCreateVectorStore = async () => {
+const getOrCreateVectorStore = async (assistantId) => {
   const assistant = await openai.beta.assistants.retrieve(assistantId);
 
   // if the assistant already has a vector store, return it

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./file-viewer.module.css";
+import axios from 'axios'
 
 const TrashIcon = () => (
   <svg
@@ -20,27 +21,40 @@ const TrashIcon = () => (
 
 const FileViewer = () => {
   const [files, setFiles] = useState([]);
+  const [assistantId, setAssistantId] = useState("");
+  const [teste, setTeste] = useState('')
 
+  // get assistantId from localStorage and handle redirection if not found
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchFiles();
-    }, 1000);
-
-    return () => clearInterval(interval);
+    const storedAssistantId = localStorage.getItem("assistantId");
+    if (storedAssistantId) {
+      setAssistantId(storedAssistantId);
+      setTeste('Eai')
+    } else {
+      window.location.href = "/";
+    }
   }, []);
 
+    useEffect(()=>{
+      if(assistantId){
+        fetchFiles()
+      }
+    }, [assistantId, files])
+
   const fetchFiles = async () => {
-    const resp = await fetch("/api/assistants/files", {
-      method: "GET",
-    });
-    const data = await resp.json();
-    setFiles(data);
+    axios.get(`/api/assistants/files?assistantId=${assistantId}`).then((res=>{
+      if (res.data.length != files.length){
+        setFiles(res.data);
+      }
+    })).catch(err=>{
+      console.log(err)
+    })
   };
 
   const handleFileDelete = async (fileId) => {
     await fetch("/api/assistants/files", {
       method: "DELETE",
-      body: JSON.stringify({ fileId }),
+      body: JSON.stringify({ fileId, assistantId }),
     });
   };
 
@@ -48,10 +62,11 @@ const FileViewer = () => {
     const data = new FormData();
     if (event.target.files.length < 0) return;
     data.append("file", event.target.files[0]);
-    await fetch("/api/assistants/files", {
+    await fetch(`/api/assistants/files?assistantId=${assistantId}`, {
       method: "POST",
       body: data,
     });
+    fetchFiles()
   };
 
   return (

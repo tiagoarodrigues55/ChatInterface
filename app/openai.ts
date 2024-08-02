@@ -1,3 +1,9 @@
 import OpenAI from "openai";
 
-export const openai = new OpenAI();
+// Pega a chave da API da variável de ambiente
+const openaiApiKey = process.env.OPENAI_API_KEY;
+
+// Cria uma instância do OpenAI usando a chave da API
+export const openai = new OpenAI({
+    apiKey: openaiApiKey,
+});

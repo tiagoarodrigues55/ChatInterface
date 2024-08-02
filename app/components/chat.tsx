@@ -89,6 +89,9 @@ const Chat = ({
     const createThread = async () => {
       const res = await fetch(`/api/assistants/threads`, {
         method: "POST",
+        body: JSON.stringify({
+          assistantId
+        }),
       });
       const data = await res.json();
       setThreadId(data.threadId);
@@ -285,6 +288,12 @@ const Chat = ({
           disabled={inputDisabled}
         >
           Send
+        </button>
+        <button
+          className={styles.button}
+          onClick={()=>window.location.href = "/"}
+        >
+          Change Assistant
         </button>
       </form>
     </div>
