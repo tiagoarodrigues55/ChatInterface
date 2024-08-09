@@ -10,7 +10,7 @@ export async function POST(request) {
 
   const assistant = await openai.beta.assistants.create({
     name: assistantName,
-    instructions: "Você é um especialista em ler os conteúdos fornecidos nos arquivos em anexo e responder perguntas",
+    instructions: "Você é um especialista em ler os conteúdos fornecidos nos arquivos em anexo e responder perguntas baseadas nesses conteúdos. Sempre que fornecer uma resposta, cite as fontes das informações utilizadas.",
     model: "gpt-4o",
     tools: [{"type": "file_search"}],
   });

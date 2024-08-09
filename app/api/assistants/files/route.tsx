@@ -5,21 +5,27 @@ export async function POST(request) {
   const { searchParams } = new URL(request.url);
   const assistantId = searchParams.get("assistantId");
   const formData = await request.formData(); // process file as FormData
-  const file = formData.get("file"); // retrieve the single file from FormData
+
   const vectorStoreId = await getOrCreateVectorStore(assistantId); // get or create vector store
 
-  // upload using the file stream
-  const openaiFile = await openai.files.create({
-    file: file,
-    purpose: "assistants",
-  });
+  const files = formData.getAll("files"); // retrieve all files from FormData
 
-  // add file to vector store
-  await openai.beta.vectorStores.files.create(vectorStoreId, {
-    file_id: openaiFile.id,
-  });
+  for (const file of files) {
+    // upload using the file stream
+    const openaiFile = await openai.files.create({
+      file: file,
+      purpose: "assistants",
+    });
+
+    // add file to vector store
+    await openai.beta.vectorStores.files.create(vectorStoreId, {
+      file_id: openaiFile.id,
+    });
+  }
+
   return new Response();
 }
+
 
 // list files in assistant's vector store
 export async function GET(request) {

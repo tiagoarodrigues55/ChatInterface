@@ -56,18 +56,31 @@ const FileViewer = () => {
       method: "DELETE",
       body: JSON.stringify({ fileId, assistantId }),
     });
+    fetchFiles();
+
   };
 
   const handleFileUpload = async (event) => {
     const data = new FormData();
-    if (event.target.files.length < 0) return;
-    data.append("file", event.target.files[0]);
+    const files = event.target.files;
+  
+    if (files.length === 0) return;
+  
+    for (let i = 0; i < files.length; i++) {
+      data.append("files", files[i]);
+    }
+  
+    console.log(data);
+    
     await fetch(`/api/assistants/files?assistantId=${assistantId}`, {
       method: "POST",
       body: data,
     });
-    fetchFiles()
+  
+    fetchFiles();
   };
+  
+  
 
   return (
     <div className={styles.fileViewer}>
